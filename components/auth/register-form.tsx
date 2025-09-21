@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
+import Image from "next/image"
 import { createUserWithEmailAndPassword, updateProfile, signOut } from "firebase/auth"
 import { doc, setDoc } from "firebase/firestore"
 import { auth, db } from "@/lib/firebase"
@@ -12,7 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, UserPlus } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import type { User } from "@/lib/types"
 
 interface RegisterFormProps {
@@ -111,15 +112,16 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <Card className="backdrop-blur-sm bg-white/90 shadow-2xl border-0 animate-in slide-in-from-bottom-4 duration-700">
+      <Card className="backdrop-blur-lg bg-white/15 supports-[backdrop-filter]:bg-white/10 border border-white/20 shadow-xl animate-in slide-in-from-bottom-4 duration-700">
         <CardHeader className="space-y-1 pb-6">
           <div className="flex items-center justify-center mb-4">
-            <div className="p-3 rounded-full bg-green-100">
-              <UserPlus className="h-8 w-8 text-green-600" />
+            <div className="relative">
+              <span className="absolute inset-0 m-auto h-10 w-10 rounded-full bg-white/20"></span>
+              <Image src="/gehu.png" alt="GEHU Logo" width={80} height={80} className="relative h-20 w-20 object-contain" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-center text-gray-900">Create Account</CardTitle>
-          <CardDescription className="text-center text-gray-600">Join the IPR Cell Management System</CardDescription>
+          <CardTitle className="text-2xl font-bold text-center text-white">Create Account</CardTitle>
+          <CardDescription className="text-center text-gray-200">Join the IPR Cell Management System</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -138,7 +140,7 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="displayName" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="displayName" className="text-sm font-medium text-gray-200">
                 Full Name
               </Label>
               <Input
@@ -153,7 +155,7 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-200">
                 University Email
               </Label>
               <Input
@@ -168,7 +170,7 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="employeeId" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="employeeId" className="text-sm font-medium text-gray-200">
                 Employee/Student ID
               </Label>
               <Input
@@ -183,7 +185,7 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="department" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="department" className="text-sm font-medium text-gray-200">
                 Department
               </Label>
               <Select onValueChange={(value) => setFormData({ ...formData, department: value })}>
@@ -201,7 +203,7 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="password" className="text-sm font-medium text-gray-200">
                 Password
               </Label>
               <Input
@@ -216,7 +218,7 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-200">
                 Confirm Password
               </Label>
               <Input
@@ -240,11 +242,11 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
             </Button>
           </form>
 
-          <div className="text-center text-sm text-gray-600">
+          <div className="text-center text-sm text-gray-200">
             Already have an account?{" "}
             <button
               onClick={onToggleMode}
-              className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200 hover:underline"
+              className="text-blue-300 hover:text-blue-200 font-medium transition-colors duration-200 hover:underline"
             >
               Sign in here
             </button>

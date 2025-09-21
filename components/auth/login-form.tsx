@@ -1,6 +1,5 @@
-
-
 import React, { useEffect, useState } from "react"
+import Image from "next/image"
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
@@ -8,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Shield, Loader2, Eye, EyeOff } from "lucide-react"
+import { Loader2, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/components/providers/auth-provider"
 
 
@@ -63,15 +62,16 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <Card className="backdrop-blur-sm bg-white/90 shadow-2xl border-0 animate-in slide-in-from-bottom-4 duration-700">
+      <Card className="backdrop-blur-lg bg-white/15 supports-[backdrop-filter]:bg-white/10 border border-white/20 shadow-xl animate-in slide-in-from-bottom-4 duration-700">
         <CardHeader className="space-y-1 pb-6">
           <div className="flex items-center justify-center mb-4">
-            <div className="p-3 rounded-full bg-blue-100">
-              <Shield className="h-8 w-8 text-blue-600" />
+            <div className="relative">
+              <span className="absolute inset-0 m-auto h-10 w-10 rounded-full bg-white/20"></span>
+              <Image src="/gehu.png" alt="GEHU Logo" width={80} height={80} className="relative h-20 w-20 object-contain" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-center text-gray-900">IPR Cell Login</CardTitle>
-          <CardDescription className="text-center text-gray-600">
+          <CardTitle className="text-2xl font-bold text-center text-white">IPR Cell Login</CardTitle>
+          <CardDescription className="text-center text-gray-200">
             Access the Intellectual Property Rights Management System
           </CardDescription>
         </CardHeader>
@@ -89,7 +89,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-200">
                 Email Address
               </Label>
               <Input
@@ -104,7 +104,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="password" className="text-sm font-medium text-gray-200">
                 Password
               </Label>
               <div className="relative">
@@ -138,11 +138,11 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
             </Button>
           </form>
 
-          <div className="text-center text-sm text-gray-600">
+          <div className="text-center text-sm text-gray-200">
             Don't have an account?{" "}
             <button
               onClick={onToggleMode}
-              className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200 hover:underline"
+              className="text-blue-300 hover:text-blue-200 font-medium transition-colors duration-200 hover:underline"
             >
               Register here
             </button>
