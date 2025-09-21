@@ -1,0 +1,9 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      // Allow authenticated users to upload and read; tighten paths if needed
+      allow read, write: if request.auth != null;
+    }
+  }
+}
