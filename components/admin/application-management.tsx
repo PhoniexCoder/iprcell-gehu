@@ -212,10 +212,11 @@ export function ApplicationManagement() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Application Management</CardTitle>
-        <div className="flex flex-col sm:flex-row gap-4 mt-4">
+    <div className="space-y-6">
+      {/* Toolbar */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        {/* Filters first on mobile */}
+        <div className="order-1 md:order-none">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
@@ -238,177 +239,188 @@ export function ApplicationManagement() {
             </SelectContent>
           </Select>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {filteredApplications.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No applications found matching your criteria.</p>
-            </div>
-          ) : (
-            filteredApplications.map((app) => (
-              <div key={app.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <h3 className="font-medium text-gray-900">{app.title}</h3>
-                      <Badge className={statusColors[app.status]}>{statusLabels[app.status]}</Badge>
+
+        {/* Notification dropdown below filters on mobile, right-aligned on desktop */}
+        <div className="order-2 md:order-none md:ml-auto w-full md:w-auto">
+          {/* Replace with your real component */}
+          {/* <NotificationsDropdown /> */}
+          {/* ...existing code... */}
+        </div>
+      </div>
+
+      {/* ...existing code... rest of page (table/list) ... */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Application Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {filteredApplications.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No applications found matching your criteria.</p>
+              </div>
+            ) : (
+              filteredApplications.map((app) => (
+                <div key={app.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <h3 className="font-medium text-gray-900">{app.title}</h3>
+                        <Badge className={statusColors[app.status]}>{statusLabels[app.status]}</Badge>
+                      </div>
+
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2 break-words">{app.description}</p>
+
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-xs text-gray-500">
+                        <div className="flex items-center space-x-1">
+                          <FileText className="h-3 w-3" />
+                          <span>{app.applicationNumber}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="h-3 w-3" />
+                          <span>{formatDate(app.createdAt)}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <User className="h-3 w-3" />
+                          <span>{app.applicantName}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <span>{app.department}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{app.description}</p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-xs text-gray-500">
-                      <div className="flex items-center space-x-1">
-                        <FileText className="h-3 w-3" />
-                        <span>{app.applicationNumber}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-3 w-3" />
-                        <span>{formatDate(app.createdAt)}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <User className="h-3 w-3" />
-                        <span>{app.applicantName}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <span>{app.department}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-2">
-                    {app.status === "submitted" && (
-                      <Button variant="outline" size="sm" onClick={() => handleForwardToPA(app)}>
-                        <Send className="h-4 w-4 mr-2" />
-                        Approve & Forward
-                      </Button>
-                    )}
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4 mr-2" />
-                          View
+                    <div className="flex w-full md:w-auto flex-row gap-2 overflow-x-auto">
+                      {app.status === "submitted" && (
+                        <Button variant="outline" size="sm" className="shrink-0" onClick={() => handleForwardToPA(app)}>
+                          <Send className="h-4 w-4 mr-2" />
+                          Approve & Forward
                         </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>{app.title}</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label className="font-medium">Application Number</Label>
-                            <p className="text-sm text-gray-600">{app.applicationNumber}</p>
-                          </div>
-                          <div>
-                            <Label className="font-medium">Description</Label>
-                            <p className="text-sm text-gray-600">{app.description}</p>
-                          </div>
-                          <div>
-                            <Label className="font-medium">Inventors</Label>
-                            <p className="text-sm text-gray-600">{app.inventors.join(", ")}</p>
-                          </div>
-                          <div>
-                            <Label className="font-medium">Applicant</Label>
-                            <p className="text-sm text-gray-600">
-                              {app.applicantName} ({app.applicantEmail})
-                            </p>
-                          </div>
-                          <div>
-                            <Label className="font-medium">Department</Label>
-                            <p className="text-sm text-gray-600">{app.department}</p>
-                          </div>
-                          <div>
-                            <Label className="font-medium">Attachments</Label>
-                            {app.attachments && app.attachments.length > 0 ? (
-                              <ul className="mt-2 space-y-2">
-                                {app.attachments.map((f) => (
-                                  <li key={f.id} className="flex items-center justify-between border rounded p-2">
-                                    <div className="truncate">
-                                      <div className="text-sm font-medium truncate">{f.name}</div>
-                                      <div className="text-xs text-gray-500">{(f.size / 1024 / 1024).toFixed(2)} MB</div>
-                                    </div>
-                                    <Button asChild variant="outline" size="sm">
-                                      <a href={f.url} target="_blank" rel="noreferrer">
-                                        <ExternalLink className="h-4 w-4 mr-2" />
-                                        Open
-                                      </a>
-                                    </Button>
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <p className="text-sm text-gray-500 mt-1">No attachments</p>
+                      )}
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="shrink-0">
+                            <Eye className="h-4 w-4 mr-2" />
+                            View
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="w-[95vw] max-w-2xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>{app.title}</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label className="font-medium">Application Number</Label>
+                              <p className="text-sm text-gray-600">{app.applicationNumber}</p>
+                            </div>
+                            <div>
+                              <Label className="font-medium">Description</Label>
+                              <p className="text-sm text-gray-600">{app.description}</p>
+                            </div>
+                            <div>
+                              <Label className="font-medium">Inventors</Label>
+                              <p className="text-sm text-gray-600">{app.inventors.join(", ")}</p>
+                            </div>
+                            <div>
+                              <Label className="font-medium">Applicant</Label>
+                              <p className="text-sm text-gray-600">
+                                {app.applicantName} ({app.applicantEmail})
+                              </p>
+                            </div>
+                            <div>
+                              <Label className="font-medium">Department</Label>
+                              <p className="text-sm text-gray-600">{app.department}</p>
+                            </div>
+                            <div>
+                              <Label className="font-medium">Attachments</Label>
+                              {app.attachments && app.attachments.length > 0 ? (
+                                <ul className="mt-2 space-y-2">
+                                  {app.attachments.map((f) => (
+                                    <li key={f.id} className="flex items-center justify-between border rounded p-2">
+                                      <div className="truncate">
+                                        <div className="text-sm font-medium truncate">{f.name}</div>
+                                        <div className="text-xs text-gray-500">{(f.size / 1024 / 1024).toFixed(2)} MB</div>
+                                      </div>
+                                      <Button asChild variant="outline" size="sm">
+                                        <a href={f.url} target="_blank" rel="noreferrer">
+                                          <ExternalLink className="h-4 w-4 mr-2" />
+                                          Open
+                                        </a>
+                                      </Button>
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <p className="text-sm text-gray-500 mt-1">No attachments</p>
+                              )}
+                            </div>
+                            {app.reviewComments && (
+                              <div>
+                                <Label className="font-medium">Review Comments</Label>
+                                <p className="text-sm text-gray-600">{app.reviewComments}</p>
+                              </div>
                             )}
                           </div>
-                          {app.reviewComments && (
-                            <div>
-                              <Label className="font-medium">Review Comments</Label>
-                              <p className="text-sm text-gray-600">{app.reviewComments}</p>
-                            </div>
-                          )}
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                        </DialogContent>
+                      </Dialog>
 
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setSelectedApp(app)
-                            setReviewData({ status: app.status, comments: app.reviewComments || "" })
-                          }}
-                        >
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          Review
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Review Application</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="status">Status</Label>
-                            <Select
-                              value={reviewData.status}
-                              onValueChange={(value) => setReviewData({ ...reviewData, status: value })}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="under_review">Under Review</SelectItem>
-                                <SelectItem value="rejected">Rejected</SelectItem>
-                                <SelectItem value="patent_filed">Patent Filed</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div>
-                            <Label htmlFor="comments">Review Comments</Label>
-                            <Textarea
-                              id="comments"
-                              placeholder="Add your review comments..."
-                              value={reviewData.comments}
-                              onChange={(e) => setReviewData({ ...reviewData, comments: e.target.value })}
-                              rows={4}
-                            />
-                          </div>
-
-                          <Button onClick={handleReviewSubmit} className="w-full">
-                            Submit Review
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button size="sm" className="shrink-0" onClick={() => {
+                              setSelectedApp(app)
+                              setReviewData({ status: app.status, comments: app.reviewComments || "" })
+                            }}>
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            Review
                           </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Review Application</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="status">Status</Label>
+                              <Select
+                                value={reviewData.status}
+                                onValueChange={(value) => setReviewData({ ...reviewData, status: value })}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="under_review">Under Review</SelectItem>
+                                  <SelectItem value="rejected">Rejected</SelectItem>
+                                  <SelectItem value="patent_filed">Patent Filed</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div>
+                              <Label htmlFor="comments">Review Comments</Label>
+                              <Textarea
+                                id="comments"
+                                placeholder="Add your review comments..."
+                                value={reviewData.comments}
+                                onChange={(e) => setReviewData({ ...reviewData, comments: e.target.value })}
+                                rows={4}
+                              />
+                            </div>
+
+                            <Button onClick={handleReviewSubmit} className="w-full">
+                              Submit Review
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-      </CardContent>
-    </Card>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

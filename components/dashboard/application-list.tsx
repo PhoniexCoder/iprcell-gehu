@@ -86,69 +86,80 @@ export function ApplicationList() {
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Your Applications</CardTitle>
-        <Button asChild size="sm">
-          <Link href="/dashboard/applications/new">
-            <FileText className="h-4 w-4 mr-2" />
-            New Application
-          </Link>
-        </Button>
-      </CardHeader>
-      <CardContent>
-        {applications.length === 0 ? (
-          <div className="text-center py-8">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No applications yet</h3>
-            <p className="text-gray-500 mb-4">Get started by submitting your first patent application.</p>
-            <Button asChild>
-              <Link href="/dashboard/applications/new">Create Application</Link>
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {applications.map((app) => (
-              <div key={app.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <h3 className="font-medium text-gray-900">{app.title}</h3>
-                      <Badge className={statusColors[app.status as keyof typeof statusColors] || "bg-gray-100 text-gray-800"}>
-                        {statusLabels[app.status as keyof typeof statusLabels] || app.status}
-                      </Badge>
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Your Applications</CardTitle>
+          <Button asChild size="sm">
+            <Link href="/dashboard/applications/new">
+              <FileText className="h-4 w-4 mr-2" />
+              New Application
+            </Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {applications.length === 0 ? (
+            <div className="rounded-lg border p-6 text-center sm:p-10">
+              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No applications yet</h3>
+              <p className="text-gray-500 mb-4">Get started by submitting your first patent application.</p>
+              <Button asChild>
+                <Link href="/dashboard/applications/new">Create Application</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {applications.map((app) => (
+                <div key={app.id} className="rounded-lg border bg-card p-4 sm:p-5">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                    {/* Left: info */}
+                    <div className="flex-1 min-w-0">
+                      {/* Title + status */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-medium text-gray-900">{app.title}</h3>
+                        <Badge className={statusColors[app.status as keyof typeof statusColors] || "bg-gray-100 text-gray-800"}>
+                          {statusLabels[app.status as keyof typeof statusLabels] || app.status}
+                        </Badge>
+                      </div>
+                      {/* Description */}
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2 break-words">
+                        {app.description}
+                      </p>
+                      {/* Meta */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-muted-foreground">
+                        <div className="flex items-center space-x-1">
+                          <FileText className="h-3 w-3" />
+                          <span>{app.applicationNumber || "Pending ID"}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="h-3 w-3" />
+                          <span>{formatDate(app.createdAt)}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <User className="h-3 w-3" />
+                          <span>{app.inventors.join(", ")}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{app.description}</p>
-
-                    <div className="flex items-center space-x-4 text-xs text-gray-500">
-                      <div className="flex items-center space-x-1">
-                        <FileText className="h-3 w-3" />
-                        <span>{app.applicationNumber || "Pending ID"}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-3 w-3" />
-                        <span>{formatDate(app.createdAt)}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <User className="h-3 w-3" />
-                        <span>{app.inventors.join(", ")}</span>
-                      </div>
+                    {/* Right: actions (single row, horizontally scrollable if tight) */}
+                    <div className="flex w-full md:w-auto flex-row gap-2 overflow-x-auto">
+                      {/* Ensure each button/link doesn’t shrink and stays on one row */}
+                      {/* View */}
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/dashboard/applications/${app.id}`}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          View
+                        </Link>
+                      </Button>
                     </div>
                   </div>
-
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/applications/${app.id}`}>
-                      <Eye className="h-4 w-4 mr-2" />
-                      View
-                    </Link>
-                  </Button>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </>
   )
 }
