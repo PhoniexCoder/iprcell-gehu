@@ -11,7 +11,6 @@ import "./uploadthing.css" // Import UploadThing global styles
 export const metadata: Metadata = {
   title: "IPR Cell - GEHU",
   description: "Intellectual Property Rights Cell Management System",
-  generator: "v0.app",
 }
 
 export default function RootLayout({

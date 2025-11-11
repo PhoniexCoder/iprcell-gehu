@@ -20,7 +20,8 @@ export interface PatentApplication {
   applicantUid?: string
   department: string
   employeeId: string
-  status: "draft" | "submitted" | "under_review" | "approved" | "rejected" | "patent_filed"
+  patentType?: "utility" | "design" | "publish"
+  status: "draft" | "submitted" | "under_review" | "approved" | "rejected" | "patent_filed" | "published"
   submittedAt?: Date
   reviewedAt?: Date
   reviewedBy?: string
@@ -28,11 +29,15 @@ export interface PatentApplication {
   patentabilityScore?: string
   noveltyAssessment?: string
   recommendations?: string
+  paRemarks?: string
+  paRemarksApprovedByAdmin?: boolean
   attachments: FileAttachment[]
   createdAt: Date
   updatedAt: Date
   forwardedToPAAt?: Date
   forwardedBy?: string
+  deletedAt?: Date
+  deletedBy?: string
 }
 
 export interface FileAttachment {

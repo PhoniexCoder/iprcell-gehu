@@ -140,4 +140,22 @@ export const NotificationTemplates = {
     message: "Your account access has been revoked. Please contact the administrator for more information.",
     type: "error" as const,
   }),
+
+  applicationDeleted: (applicationNumber: string, applicantName: string, title: string) => ({
+    title: "Application Deleted by User",
+    message: `${applicantName} deleted their application ${applicationNumber}: "${title}".`,
+    type: "warning" as const,
+  }),
+
+  applicationPublished: (applicationNumber: string) => ({
+    title: "Patent Published",
+    message: `Congratulations! Your patent application ${applicationNumber} has been published.`,
+    type: "success" as const,
+  }),
+
+  paRemarksAvailable: (applicationNumber: string) => ({
+    title: "Patent Attorney Remarks Available",
+    message: `The Patent Attorney has added remarks to your application ${applicationNumber}. Please review them.`,
+    type: "info" as const,
+  }),
 }

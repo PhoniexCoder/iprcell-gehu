@@ -23,6 +23,7 @@ const statusColors = {
   approved: "bg-green-100 text-green-800",
   rejected: "bg-red-100 text-red-800",
   patent_filed: "bg-purple-100 text-purple-800",
+  published: "bg-indigo-100 text-indigo-800",
 }
 
 const statusLabels = {
@@ -32,6 +33,7 @@ const statusLabels = {
   approved: "Approved",
   rejected: "Rejected",
   patent_filed: "Patent Filed",
+  published: "Published",
 }
 
 export function ApplicationManagement() {
@@ -196,6 +198,50 @@ export function ApplicationManagement() {
     }
   }
 
+  const handleApprovePARemarks = async (app: PatentApplication) => {
+    if (!user) return
+    try {
+      await updateDoc(doc(db, "applications", app.id), {
+        paRemarksApprovedByAdmin: true,
+        updatedAt: new Date(),
+      })
+
+      // Notify applicant that PA remarks are now available
+      const uid = app.applicantUid || (await getUserIdByEmail(app.applicantEmail))
+      if (uid) {
+        await createNotificationsForUsers([uid], {
+          ...NotificationTemplates.paRemarksAvailable(app.applicationNumber || ""),
+          read: false,
+          applicationId: app.id,
+        })
+      }
+    } catch (error) {
+      console.error("Error approving PA remarks:", error)
+    }
+  }
+
+  const handleMarkAsPublished = async (app: PatentApplication) => {
+    if (!user) return
+    try {
+      await updateDoc(doc(db, "applications", app.id), {
+        status: "published",
+        updatedAt: new Date(),
+      })
+
+      // Notify applicant via admin
+      const uid = app.applicantUid || (await getUserIdByEmail(app.applicantEmail))
+      if (uid) {
+        await createNotificationsForUsers([uid], {
+          ...NotificationTemplates.applicationPublished(app.applicationNumber || ""),
+          read: false,
+          applicationId: app.id,
+        })
+      }
+    } catch (error) {
+      console.error("Error marking as published:", error)
+    }
+  }
+
   if (loading) {
     return (
       <Card>
@@ -236,6 +282,8 @@ export function ApplicationManagement() {
               <SelectItem value="under_review">Under Review</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
               <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="patent_filed">Patent Filed</SelectItem>
+              <SelectItem value="published">Published</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -358,6 +406,38 @@ export function ApplicationManagement() {
                               <div>
                                 <Label className="font-medium">Review Comments</Label>
                                 <p className="text-sm text-gray-600">{app.reviewComments}</p>
+                              </div>
+                            )}
+                            {app.paRemarks && (
+                              <div>
+                                <Label className="font-medium">PA Remarks</Label>
+                                <p className="text-sm text-gray-600 whitespace-pre-wrap">{app.paRemarks}</p>
+                                {!app.paRemarksApprovedByAdmin && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="mt-2"
+                                    onClick={() => handleApprovePARemarks(app)}
+                                  >
+                                    Approve & Share with Applicant
+                                  </Button>
+                                )}
+                                {app.paRemarksApprovedByAdmin && (
+                                  <Badge variant="outline" className="mt-2 text-green-600">
+                                    Approved - Visible to Applicant
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                            {app.status === "patent_filed" && (
+                              <div className="pt-4 border-t">
+                                <Button
+                                  size="sm"
+                                  className="w-full"
+                                  onClick={() => handleMarkAsPublished(app)}
+                                >
+                                  Mark as Published
+                                </Button>
                               </div>
                             )}
                           </div>

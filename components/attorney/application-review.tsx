@@ -23,6 +23,7 @@ const statusColors = {
   approved: "bg-green-100 text-green-800",
   rejected: "bg-red-100 text-red-800",
   patent_filed: "bg-purple-100 text-purple-800",
+  published: "bg-indigo-100 text-indigo-800",
 }
 
 const statusLabels = {
@@ -31,6 +32,7 @@ const statusLabels = {
   approved: "Approved",
   rejected: "Rejected",
   patent_filed: "Patent Filed",
+  published: "Published",
 }
 
 export function ApplicationReview() {
@@ -46,6 +48,7 @@ export function ApplicationReview() {
     patentabilityScore: "",
     noveltyAssessment: "",
     recommendations: "",
+    paRemarks: "",
   })
   const { user } = useAuth()
 
@@ -62,7 +65,7 @@ export function ApplicationReview() {
     // Show to PA only after admin approved/forwarded
     const q = query(
       collection(db, "applications"),
-      where("status", "in", ["approved", "rejected", "patent_filed"]),
+      where("status", "in", ["approved", "rejected", "patent_filed", "published"]),
       orderBy("createdAt", "desc"),
     )
 
@@ -113,6 +116,10 @@ export function ApplicationReview() {
       if (reviewData.patentabilityScore) updateData.patentabilityScore = reviewData.patentabilityScore
       if (reviewData.noveltyAssessment) updateData.noveltyAssessment = reviewData.noveltyAssessment
       if (reviewData.recommendations) updateData.recommendations = reviewData.recommendations
+      if (reviewData.paRemarks) {
+        updateData.paRemarks = reviewData.paRemarks
+        updateData.paRemarksApprovedByAdmin = false // Requires admin approval
+      }
 
       await updateDoc(doc(db, "applications", selectedApp.id), updateData)
 
@@ -139,7 +146,7 @@ export function ApplicationReview() {
       }
 
       setSelectedApp(null)
-      setReviewData({ status: "", comments: "", patentabilityScore: "", noveltyAssessment: "", recommendations: "" })
+      setReviewData({ status: "", comments: "", patentabilityScore: "", noveltyAssessment: "", recommendations: "", paRemarks: "" })
     } catch (error) {
       console.error("Error updating application:", error)
     }
@@ -184,6 +191,7 @@ export function ApplicationReview() {
                 <SelectItem value="approved">Approved</SelectItem>
                 <SelectItem value="rejected">Rejected</SelectItem>
                 <SelectItem value="patent_filed">Patent Filed</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -355,6 +363,7 @@ export function ApplicationReview() {
                                 patentabilityScore: app.patentabilityScore || "",
                                 noveltyAssessment: app.noveltyAssessment || "",
                                 recommendations: app.recommendations || "",
+                                paRemarks: app.paRemarks || "",
                               })
                             }}
                           >
@@ -457,6 +466,20 @@ export function ApplicationReview() {
                                 onChange={(e) => setReviewData({ ...reviewData, recommendations: e.target.value })}
                                 rows={3}
                               />
+                            </div>
+
+                            <div>
+                              <Label htmlFor="paRemarks">Remarks for Applicant (Optional)</Label>
+                              <Textarea
+                                id="paRemarks"
+                                placeholder="Add remarks that will be shared with the applicant after admin approval..."
+                                value={reviewData.paRemarks}
+                                onChange={(e) => setReviewData({ ...reviewData, paRemarks: e.target.value })}
+                                rows={3}
+                              />
+                              <p className="text-xs text-gray-500 mt-1">
+                                These remarks will be visible to the applicant only after admin approval
+                              </p>
                             </div>
 
                             <Button onClick={handleReviewSubmit} className="w-full">

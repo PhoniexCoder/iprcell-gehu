@@ -1,15 +1,30 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore"
+import { collection, query, where, orderBy, onSnapshot, doc, updateDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { useAuth } from "@/components/providers/auth-provider"
 import type { PatentApplication } from "@/lib/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { FileText, Calendar, User, Eye } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { FileText, Calendar, User, Eye, Trash2, MessageSquare } from "lucide-react"
+import { Label } from "@/components/ui/label"
 import Link from "next/link"
+import { toast } from "@/hooks/use-toast"
+import { NotificationTemplates, getUserIdsByRole, createNotificationsForUsers } from "@/lib/notifications"
 
 const statusColors = {
   draft: "bg-gray-100 text-gray-800",
@@ -18,6 +33,7 @@ const statusColors = {
   approved: "bg-green-100 text-green-800",
   rejected: "bg-red-100 text-red-800",
   patent_filed: "bg-purple-100 text-purple-800",
+  published: "bg-indigo-100 text-indigo-800",
 }
 
 const statusLabels = {
@@ -27,11 +43,13 @@ const statusLabels = {
   approved: "Approved",
   rejected: "Rejected",
   patent_filed: "Patent Filed",
+  published: "Published",
 }
 
 export function ApplicationList() {
   const [applications, setApplications] = useState<PatentApplication[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState<string | null>(null)
   const { user } = useAuth()
   const formatDate = (value: any) => {
     try {
@@ -42,9 +60,51 @@ export function ApplicationList() {
     }
   }
 
+  const handleDelete = async (app: PatentApplication) => {
+    if (!user) return
+    setDeleting(app.id)
+    try {
+      await updateDoc(doc(db, "applications", app.id), {
+        deletedAt: new Date(),
+        deletedBy: user.uid,
+        updatedAt: new Date(),
+      })
+
+      // Notify admins about deletion
+      const adminIds = await getUserIdsByRole("admin")
+      await createNotificationsForUsers(adminIds, {
+        ...NotificationTemplates.applicationDeleted(
+          app.applicationNumber || "Pending ID",
+          user.displayName,
+          app.title,
+        ),
+        read: false,
+        applicationId: app.id,
+      })
+
+      toast({
+        title: "Application deleted",
+        description: "Your application has been deleted successfully.",
+      })
+    } catch (error) {
+      console.error("Error deleting application:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete application. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleting(null)
+    }
+  }
+
   useEffect(() => {
     if (!user) return
-    const q = query(collection(db, "applications"), where("applicantEmail", "==", user.email))
+    const q = query(
+      collection(db, "applications"),
+      where("applicantEmail", "==", user.email),
+      where("deletedAt", "==", null)
+    )
 
     const unsubscribe = onSnapshot(
       q,
@@ -144,14 +204,73 @@ export function ApplicationList() {
 
                     {/* Right: actions (single row, horizontally scrollable if tight) */}
                     <div className="flex w-full md:w-auto flex-row gap-2 overflow-x-auto">
-                      {/* Ensure each button/link doesn’t shrink and stays on one row */}
                       {/* View */}
-                      <Button variant="outline" size="sm" asChild>
+                      <Button variant="outline" size="sm" asChild className="shrink-0">
                         <Link href={`/dashboard/applications/${app.id}`}>
                           <Eye className="h-4 w-4 mr-2" />
                           View
                         </Link>
                       </Button>
+
+                      {/* PA Remarks */}
+                      {app.paRemarks && app.paRemarksApprovedByAdmin && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="shrink-0">
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              PA Remarks
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>Patent Attorney Remarks</DialogTitle>
+                            </DialogHeader>
+                            <div className="mt-4 space-y-4">
+                              <div>
+                                <Label className="font-semibold">Application</Label>
+                                <p className="text-sm text-gray-700 mt-1">{app.title}</p>
+                              </div>
+                              <div>
+                                <Label className="font-semibold">Remarks</Label>
+                                <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{app.paRemarks}</p>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+
+                      {/* Delete */}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="shrink-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            disabled={deleting === app.id}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Application?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{app.title}"? This action cannot be undone. The admin
+                              will be notified of this deletion.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(app)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </div>

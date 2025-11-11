@@ -13,9 +13,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { FileUploader } from "@/components/file-upload/file-uploader"
 import type { PatentApplication, FileAttachment } from "@/lib/types"
-import { Loader2, Plus, Minus } from "lucide-react"
+import { Loader2, Plus, Minus, Eye } from "lucide-react"
 import { NotificationTemplates, createNotificationsForUsers, getUserIdsByRole, getUserIdByEmail } from "@/lib/notifications"
 import { toast } from "@/hooks/use-toast"
 
@@ -24,10 +26,12 @@ export function ApplicationForm() {
     title: "",
     description: "",
     inventors: [""],
+    patentType: "" as "utility" | "design" | "publish" | "",
   })
   const [attachments, setAttachments] = useState<FileAttachment[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [showPreview, setShowPreview] = useState(false)
   const { user } = useAuth()
   const router = useRouter()
 
@@ -72,6 +76,12 @@ export function ApplicationForm() {
       return
     }
 
+    if (!formData.patentType) {
+      setError("Please select a patent type")
+      setLoading(false)
+      return
+    }
+
     const validInventors = formData.inventors.filter((inv) => inv.trim())
     if (validInventors.length === 0) {
       setError("Please add at least one inventor")
@@ -84,6 +94,7 @@ export function ApplicationForm() {
         title: formData.title.trim(),
         description: formData.description.trim(),
         inventors: validInventors,
+        patentType: formData.patentType,
         applicantName: user.displayName,
         applicantEmail: user.email,
         applicantUid: user.uid,
@@ -127,6 +138,7 @@ export function ApplicationForm() {
         title: formData.title.trim() || "Untitled Application",
         description: formData.description.trim() || "No description provided",
         inventors: formData.inventors.filter((inv) => inv.trim()),
+        patentType: formData.patentType || undefined,
         applicantName: user.displayName,
         applicantEmail: user.email,
         applicantUid: user.uid,
@@ -181,6 +193,28 @@ export function ApplicationForm() {
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 required
               />
+            </div>
+
+            <div>
+              <Label htmlFor="patentType">Patent Type *</Label>
+              <Select
+                value={formData.patentType}
+                onValueChange={(value: "utility" | "design" | "publish") =>
+                  setFormData({ ...formData, patentType: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select patent type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="utility">Utility Patent</SelectItem>
+                  <SelectItem value="design">Design Patent</SelectItem>
+                  <SelectItem value="publish">Publish Patent</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                Utility: functional inventions; Design: aesthetic/ornamental; Publish: research publication
+              </p>
             </div>
 
             <div>
@@ -249,7 +283,11 @@ export function ApplicationForm() {
               existingFiles={attachments}
               maxFiles={10}
               maxSizePerFile={10}
+              acceptedTypes={["application/vnd.openxmlformats-officedocument.wordprocessingml.document"]}
             />
+            <p className="text-xs text-gray-500 mt-2">
+              * Only .docx (Word) files are accepted. Maximum 10 files, 10MB each.
+            </p>
           </CardContent>
         </Card>
 
@@ -283,6 +321,69 @@ export function ApplicationForm() {
 
         {/* Submit Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
+          <Dialog open={showPreview} onOpenChange={setShowPreview}>
+            <DialogTrigger asChild>
+              <Button type="button" variant="outline" className="flex-1">
+                <Eye className="mr-2 h-4 w-4" />
+                Preview Application
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Application Preview</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 mt-4">
+                <div>
+                  <Label className="font-semibold">Title</Label>
+                  <p className="text-sm text-gray-700 mt-1">{formData.title || "No title provided"}</p>
+                </div>
+                <div>
+                  <Label className="font-semibold">Patent Type</Label>
+                  <p className="text-sm text-gray-700 mt-1 capitalize">
+                    {formData.patentType ? `${formData.patentType} Patent` : "Not selected"}
+                  </p>
+                </div>
+                <div>
+                  <Label className="font-semibold">Description</Label>
+                  <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">
+                    {formData.description || "No description provided"}
+                  </p>
+                </div>
+                <div>
+                  <Label className="font-semibold">Inventors</Label>
+                  <ul className="list-disc list-inside text-sm text-gray-700 mt-1">
+                    {formData.inventors
+                      .filter((inv) => inv.trim())
+                      .map((inv, i) => (
+                        <li key={i}>{inv}</li>
+                      ))}
+                  </ul>
+                </div>
+                <div>
+                  <Label className="font-semibold">Attachments</Label>
+                  {attachments.length > 0 ? (
+                    <ul className="list-disc list-inside text-sm text-gray-700 mt-1">
+                      {attachments.map((file) => (
+                        <li key={file.id}>{file.name}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-500 mt-1">No attachments</p>
+                  )}
+                </div>
+                <div>
+                  <Label className="font-semibold">Applicant</Label>
+                  <p className="text-sm text-gray-700 mt-1">
+                    {user?.displayName} ({user?.email})
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    {user?.department} - {user?.employeeId}
+                  </p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           <Button
             type="button"
             variant="outline"

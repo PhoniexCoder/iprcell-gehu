@@ -1,28 +1,37 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can read their own user doc; admins can read all
+    // Helper function to check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user owns the document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Users collection: users can read their own doc, or read all if authenticated (for admin dashboard)
     match /users/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isSignedIn(); // Allow authenticated users to read (needed for admin dashboard)
+      allow write: if isSignedIn() && isOwner(userId); // Users can only update their own doc
     }
 
     // Notifications: users can read their own notifications
     match /notifications/{docId} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      // writes should come from the app on behalf of authenticated users; tighten as needed
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
-    // Applications: owner can read/write their own; admins/attorneys require custom logic
+    // Applications: authenticated users can read/write (simplified for admin/PA access)
     match /applications/{appId} {
-      allow read, write: if request.auth != null; // Simplified: adjust to roles if using security rules with custom claims
+      allow read, write: if isSignedIn();
     }
 
     // Counters for sequential numbers
     match /counters/{counterId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isSignedIn();
     }
 
     // Default deny
