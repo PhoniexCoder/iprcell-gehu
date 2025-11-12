@@ -44,12 +44,12 @@ export function Sidebar() {
   // Disclosure format download links
   const disclosureFormats = [
     {
-      href: "/Invention Disclosure format .pdf",
+      href: "/Invention Disclosure format.docx",
       label: "Download Invention Disclosure Format",
       icon: FileText,
     },
     {
-      href: "/DESIGN DISCLOSURE FORMAT.pdf",
+      href: "/DESIGN DISCLOSURE FORMAT.docx",
       label: "Download Design Disclosure Format",
       icon: FileText,
     },
