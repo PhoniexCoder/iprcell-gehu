@@ -102,8 +102,7 @@ export function ApplicationList() {
     if (!user) return
     const q = query(
       collection(db, "applications"),
-      where("applicantEmail", "==", user.email),
-      where("deletedAt", "==", null)
+      where("applicantEmail", "==", user.email)
     )
 
     const unsubscribe = onSnapshot(
@@ -112,11 +111,13 @@ export function ApplicationList() {
         const apps = (snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        })) as PatentApplication[]).sort((a, b) => {
-          const ad = (a.createdAt as any)?.toDate ? (a.createdAt as any).toDate() : (a.createdAt as any)
-          const bd = (b.createdAt as any)?.toDate ? (b.createdAt as any).toDate() : (b.createdAt as any)
-          return new Date(bd || 0).getTime() - new Date(ad || 0).getTime()
-        })
+        })) as PatentApplication[])
+          .filter((app) => !app.deletedAt) // Filter out deleted apps in client
+          .sort((a, b) => {
+            const ad = (a.createdAt as any)?.toDate ? (a.createdAt as any).toDate() : (a.createdAt as any)
+            const bd = (b.createdAt as any)?.toDate ? (b.createdAt as any).toDate() : (b.createdAt as any)
+            return new Date(bd || 0).getTime() - new Date(ad || 0).getTime()
+          })
         setApplications(apps)
         setLoading(false)
       },
@@ -168,47 +169,61 @@ export function ApplicationList() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
               {applications.map((app) => (
-                <div key={app.id} className="rounded-lg border bg-card p-4 sm:p-5">
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
-                    {/* Left: info */}
-                    <div className="flex-1 min-w-0">
-                      {/* Title + status */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-medium text-gray-900">{app.title}</h3>
-                        <Badge className={statusColors[app.status as keyof typeof statusColors] || "bg-gray-100 text-gray-800"}>
-                          {statusLabels[app.status as keyof typeof statusLabels] || app.status}
-                        </Badge>
-                      </div>
-                      {/* Description */}
-                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2 break-words">
-                        {app.description}
-                      </p>
-                      {/* Meta */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-muted-foreground">
-                        <div className="flex items-center space-x-1">
-                          <FileText className="h-3 w-3" />
-                          <span>{app.applicationNumber || "Pending ID"}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="h-3 w-3" />
-                          <span>{formatDate(app.createdAt)}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <User className="h-3 w-3" />
-                          <span>{app.inventors.join(", ")}</span>
+                <div key={app.id} className="rounded-lg border bg-card hover:shadow-md transition-shadow">
+                  {/* Card Header */}
+                  <div className="p-4 border-b bg-muted/30">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base text-gray-900 truncate mb-1" title={app.title}>
+                          {app.title}
+                        </h3>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className={statusColors[app.status as keyof typeof statusColors] || "bg-gray-100 text-gray-800"}>
+                            {statusLabels[app.status as keyof typeof statusLabels] || app.status}
+                          </Badge>
+                          {app.patentType && (
+                            <Badge variant="outline" className="text-xs">
+                              {app.patentType.charAt(0).toUpperCase() + app.patentType.slice(1)}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Right: actions (single row, horizontally scrollable if tight) */}
-                    <div className="flex w-full md:w-auto flex-row gap-2 overflow-x-auto">
-                      {/* View */}
-                      <Button variant="outline" size="sm" asChild className="shrink-0">
+                  {/* Card Body */}
+                  <div className="p-4">
+                    {/* Description */}
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                      {app.description}
+                    </p>
+
+                    {/* Meta Information */}
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <FileText className="h-3.5 w-3.5 shrink-0" />
+                        <span className="font-mono truncate">{app.applicationNumber || "Pending Assignment"}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Calendar className="h-3.5 w-3.5 shrink-0" />
+                        <span>Submitted: {formatDate(app.createdAt)}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <User className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate" title={app.inventors.join(", ")}>
+                          {app.inventors.length === 1 ? app.inventors[0] : `${app.inventors[0]} +${app.inventors.length - 1} more`}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-2 pt-3 border-t">
+                      <Button variant="outline" size="sm" asChild className="w-full justify-start">
                         <Link href={`/dashboard/applications/${app.id}`}>
                           <Eye className="h-4 w-4 mr-2" />
-                          View
+                          View Details
                         </Link>
                       </Button>
 
@@ -216,9 +231,9 @@ export function ApplicationList() {
                       {app.paRemarks && app.paRemarksApprovedByAdmin && (
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" className="shrink-0">
+                            <Button variant="outline" size="sm" className="w-full justify-start">
                               <MessageSquare className="h-4 w-4 mr-2" />
-                              PA Remarks
+                              Patent Attorney Remarks
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="max-w-2xl">
@@ -245,11 +260,11 @@ export function ApplicationList() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="shrink-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
                             disabled={deleting === app.id}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
+                            Delete Application
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>

@@ -228,7 +228,7 @@ export function FileUploader({
               />
             </p>
             <p className="text-xs text-gray-500">
-              Maximum {maxFiles} files, {maxSizePerFile}MB each. Supported: PDF, DOC, DOCX, Images
+              Supported: DOCX only.
             </p>
           </div>
         </CardContent>
