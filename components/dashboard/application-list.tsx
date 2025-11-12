@@ -227,6 +227,39 @@ export function ApplicationList() {
                         </Link>
                       </Button>
 
+                      {/* Admin Review */}
+                      {app.reviewComments && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="w-full justify-start">
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              Admin Review
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>Admin Review</DialogTitle>
+                            </DialogHeader>
+                            <div className="mt-4 space-y-4">
+                              <div>
+                                <Label className="font-semibold">Application</Label>
+                                <p className="text-sm text-gray-700 mt-1">{app.title}</p>
+                              </div>
+                              {app.reviewedAt && (
+                                <div>
+                                  <Label className="font-semibold">Reviewed On</Label>
+                                  <p className="text-sm text-gray-700 mt-1">{formatDate(app.reviewedAt)}</p>
+                                </div>
+                              )}
+                              <div>
+                                <Label className="font-semibold">Comments</Label>
+                                <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{app.reviewComments}</p>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+
                       {/* PA Remarks */}
                       {app.paRemarks && app.paRemarksApprovedByAdmin && (
                         <Dialog>

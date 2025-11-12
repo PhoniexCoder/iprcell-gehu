@@ -19,6 +19,7 @@ const statusColors: Record<PatentApplication["status"], string> = {
   approved: "bg-green-100 text-green-800",
   rejected: "bg-red-100 text-red-800",
   patent_filed: "bg-purple-100 text-purple-800",
+  published: "bg-indigo-100 text-indigo-800",
 }
 
 export default function ApplicationDetailPage() {
@@ -156,6 +157,67 @@ export default function ApplicationDetailPage() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Admin Review */}
+              {app.reviewComments && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Admin Review</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {app.reviewedAt && (
+                      <div className="text-xs text-gray-500">
+                        <span className="font-medium">Reviewed on:</span> {formatDate(app.reviewedAt)}
+                      </div>
+                    )}
+                    <div>
+                      <div className="text-sm font-medium text-gray-700 mb-1">Comments:</div>
+                      <p className="text-sm text-gray-600 whitespace-pre-wrap">{app.reviewComments}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Patent Attorney Review */}
+              {(app.patentabilityScore || app.noveltyAssessment || app.recommendations) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Patent Attorney Review</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {app.patentabilityScore && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-700 mb-1">Patentability Score:</div>
+                        <p className="text-sm text-gray-600">{app.patentabilityScore}</p>
+                      </div>
+                    )}
+                    {app.noveltyAssessment && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-700 mb-1">Novelty Assessment:</div>
+                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{app.noveltyAssessment}</p>
+                      </div>
+                    )}
+                    {app.recommendations && (
+                      <div>
+                        <div className="text-sm font-medium text-gray-700 mb-1">Recommendations:</div>
+                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{app.recommendations}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* PA Remarks (Approved by Admin) */}
+              {app.paRemarks && app.paRemarksApprovedByAdmin && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Patent Attorney Remarks</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600 whitespace-pre-wrap">{app.paRemarks}</p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         )}
